@@ -47,6 +47,7 @@ struct VariablesImplementationFactory {
 
   @MemberBlockItemListBuilder
   func variablesDeclarations(
+    modifiers: DeclModifierListSyntax = [],
     protocolVariableDeclaration: VariableDeclSyntax
   ) throws -> MemberBlockItemListSyntax {
     if protocolVariableDeclaration.bindings.count == 1 {
@@ -66,6 +67,7 @@ struct VariablesImplementationFactory {
        */
       } else {
         try protocolVariableDeclarationWithGetterAndSetter(binding: binding)
+          .with(\.modifiers, modifiers)
 
         try underlyingVariableDeclaration(binding: binding)
       }

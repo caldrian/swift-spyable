@@ -93,7 +93,8 @@ struct SpyFactory {
   private let functionImplementationFactory = FunctionImplementationFactory()
 
   func classDeclaration(for protocolDeclaration: ProtocolDeclSyntax) throws -> ClassDeclSyntax {
-    let modifiers = protocolDeclaration.modifiers
+
+    let publicModifier = protocolDeclaration.modifiers.filter { $0.name.tokenKind == .keyword(.public) }
 
     let identifier = TokenSyntax.identifier(protocolDeclaration.name.text + "Spy")
 
@@ -110,7 +111,7 @@ struct SpyFactory {
       .compactMap { $0.decl.as(FunctionDeclSyntax.self)?.removingLeadingSpaces }
 
     return try ClassDeclSyntax(
-      modifiers: modifiers,
+      modifiers: publicModifier,
       name: identifier,
       genericParameterClause: genericParameterClause,
       inheritanceClause: InheritanceClauseSyntax {
@@ -121,43 +122,50 @@ struct SpyFactory {
       memberBlockBuilder: {
         for variableDeclaration in variableDeclarations {
           try variablesImplementationFactory.variablesDeclarations(
+            modifiers: publicModifier,
             protocolVariableDeclaration: variableDeclaration
           )
         }
 
         for functionDeclaration in functionDeclarations {
+          let functionDeclaration = functionDeclaration
+            .with(\.modifiers, publicModifier)
+
           let variablePrefix = variablePrefixFactory.text(for: functionDeclaration)
           let parameterList = functionDeclaration.signature.parameterClause.parameters
 
           try callsCountFactory.variableDeclaration(variablePrefix: variablePrefix)
+            .with(\.modifiers, publicModifier)
           try calledFactory.variableDeclaration(variablePrefix: variablePrefix)
+            .with(\.modifiers, publicModifier)
 
           if parameterList.supportsParameterTracking {
             try receivedArgumentsFactory.variableDeclaration(
               variablePrefix: variablePrefix,
               parameterList: parameterList
-            )
+            ).with(\.modifiers, publicModifier)
             try receivedInvocationsFactory.variableDeclaration(
               variablePrefix: variablePrefix,
               parameterList: parameterList
-            )
+            ).with(\.modifiers, publicModifier)
           }
 
           if functionDeclaration.signature.effectSpecifiers?.throwsSpecifier != nil {
             try throwableErrorFactory.variableDeclaration(variablePrefix: variablePrefix)
+              .with(\.modifiers, publicModifier)
           }
 
           if let returnType = functionDeclaration.signature.returnClause?.type {
             try returnValueFactory.variableDeclaration(
               variablePrefix: variablePrefix,
               functionReturnType: returnType
-            )
+            ).with(\.modifiers, publicModifier)
           }
 
           try closureFactory.variableDeclaration(
             variablePrefix: variablePrefix,
             functionSignature: functionDeclaration.signature
-          )
+          ).with(\.modifiers, publicModifier)
 
           functionImplementationFactory.declaration(
             variablePrefix: variablePrefix,
