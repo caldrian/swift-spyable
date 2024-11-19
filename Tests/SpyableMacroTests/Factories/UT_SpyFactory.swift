@@ -47,12 +47,15 @@ final class UT_SpyFactory: XCTestCase {
         """,
       expectingClassDeclaration: """
         public class ServiceSpy: Service {
+            public init() {
+            }
             public var fetchCallsCount = 0
             public var fetchCalled: Bool {
                 return fetchCallsCount > 0
             }
             public var fetchClosure: (() -> Void)?
-            public func fetch() {
+            public
+            func fetch() {
                 fetchCallsCount += 1
                 fetchClosure?()
             }

@@ -120,6 +120,12 @@ struct SpyFactory {
         )
       },
       memberBlockBuilder: {
+
+        if !publicModifier.isEmpty {
+          try! InitializerDeclSyntax("init()") {}
+            .with(\.modifiers, publicModifier)
+        }
+
         for variableDeclaration in variableDeclarations {
           try variablesImplementationFactory.variablesDeclarations(
             modifiers: publicModifier,
