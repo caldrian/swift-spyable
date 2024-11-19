@@ -38,6 +38,29 @@ final class UT_SpyFactory: XCTestCase {
     )
   }
 
+  func testDeclarationModifiers() throws {
+    try assertProtocol(
+      withDeclaration: """
+        public protocol Service {
+            func fetch()
+        }
+        """,
+      expectingClassDeclaration: """
+        public class ServiceSpy: Service {
+            var fetchCallsCount = 0
+            var fetchCalled: Bool {
+                return fetchCallsCount > 0
+            }
+            var fetchClosure: (() -> Void)?
+            func fetch() {
+                fetchCallsCount += 1
+                fetchClosure?()
+            }
+        }
+        """
+    )
+  }
+
   func testDeclarationArguments() throws {
     try assertProtocol(
       withDeclaration: """

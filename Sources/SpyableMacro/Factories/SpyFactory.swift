@@ -93,6 +93,8 @@ struct SpyFactory {
   private let functionImplementationFactory = FunctionImplementationFactory()
 
   func classDeclaration(for protocolDeclaration: ProtocolDeclSyntax) throws -> ClassDeclSyntax {
+    let modifiers = protocolDeclaration.modifiers
+
     let identifier = TokenSyntax.identifier(protocolDeclaration.name.text + "Spy")
 
     let assosciatedtypeDeclarations = protocolDeclaration.memberBlock.members.compactMap {
@@ -108,6 +110,7 @@ struct SpyFactory {
       .compactMap { $0.decl.as(FunctionDeclSyntax.self)?.removingLeadingSpaces }
 
     return try ClassDeclSyntax(
+      modifiers: modifiers,
       name: identifier,
       genericParameterClause: genericParameterClause,
       inheritanceClause: InheritanceClauseSyntax {
